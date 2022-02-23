@@ -4,6 +4,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
+import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
@@ -11,6 +12,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
 
 public class Shooter extends SubsystemBase{
@@ -18,6 +20,8 @@ public class Shooter extends SubsystemBase{
     private final WPI_TalonFX m_lowerShooterMotor = new WPI_TalonFX(ShooterConstants.kLowerShooterMotorPort);
     private final WPI_TalonSRX m_assistMotor = new WPI_TalonSRX(ShooterConstants.kAssistMotorPort);
     private TalonFXConfiguration m_configs = new TalonFXConfiguration();
+    private double m_upperVelocityTarget = 0.0;
+    private double m_lowerVelocityTarget = 0.0;
 
     public Shooter(){
         m_upperShooterMotor.configFactoryDefault();
@@ -30,6 +34,23 @@ public class Shooter extends SubsystemBase{
         m_configs.nominalOutputReverse = 0.0;
         m_configs.peakOutputForward = 1.0;
         m_configs.peakOutputReverse = 0.0; // don't allow reverse
+        m_configs.primaryPID.selectedFeedbackSensor = FeedbackDevice.IntegratedSensor;
+
+        m_upperShooterMotor.config_kF(0, Constants.ShooterConstants.kF,20);
+        m_upperShooterMotor.config_kD(0,Constants.ShooterConstants.kD, 20);
+        m_upperShooterMotor.config_kP(0, Constants.ShooterConstants.kP, 20);
+        m_upperShooterMotor.config_kI(0, Constants.ShooterConstants.kI, 20);
+        m_upperShooterMotor.config_IntegralZone(0, Constants.ShooterConstants.KIzone, 20);
+        m_upperShooterMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 20);
+
+        m_lowerShooterMotor.config_kF(0, Constants.ShooterConstants.kF,20);
+        m_lowerShooterMotor.config_kD(0,Constants.ShooterConstants.kD, 20);
+        m_lowerShooterMotor.config_kP(0, Constants.ShooterConstants.kP, 20);
+        m_lowerShooterMotor.config_kI(0, Constants.ShooterConstants.kI, 20);
+        m_lowerShooterMotor.config_IntegralZone(0, Constants.ShooterConstants.KIzone, 20);
+        m_lowerShooterMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 20);
+
+
         m_upperShooterMotor.configAllSettings(m_configs,20);
         m_lowerShooterMotor.configAllSettings(m_configs,20);
         m_upperShooterMotor.setNeutralMode(NeutralMode.Coast);
@@ -50,6 +71,8 @@ public class Shooter extends SubsystemBase{
     public void shooterOff(){
         m_upperShooterMotor.set(ControlMode.PercentOutput,0.0);
         m_lowerShooterMotor.set(ControlMode.PercentOutput,0.0);
+        m_upperVelocityTarget = 0;
+        m_lowerVelocityTarget = 0;
     }
 
     public void assistOn(){
@@ -71,6 +94,8 @@ public class Shooter extends SubsystemBase{
     public void speedControlShooter(double upperSpeedTarget, double lowerSpeedTarget){
         m_upperShooterMotor.set(ControlMode.Velocity,upperSpeedTarget);
         m_lowerShooterMotor.set(ControlMode.Velocity,lowerSpeedTarget);
+        m_upperVelocityTarget = upperSpeedTarget;
+        m_lowerVelocityTarget = lowerSpeedTarget;
     }
 
     @Override
@@ -79,6 +104,8 @@ public class Shooter extends SubsystemBase{
         SmartDashboard.putNumber("LS Speed",m_lowerShooterMotor.getSelectedSensorVelocity());
         SmartDashboard.putNumber("US Set",m_upperShooterMotor.getMotorOutputPercent());
         SmartDashboard.putNumber("LS Set",m_lowerShooterMotor.getMotorOutputPercent());
+        SmartDashboard.putNumber("US Target",m_upperVelocityTarget);
+        SmartDashboard.putNumber("LS Target",m_lowerVelocityTarget);
         SmartDashboard.putNumber("Assist Set",m_assistMotor.get());
     }
 }

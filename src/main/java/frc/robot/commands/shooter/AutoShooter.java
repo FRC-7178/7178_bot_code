@@ -61,8 +61,8 @@ public class AutoShooter extends CommandBase{
             case BALL_READY: // Pass through Stage to start the Shooter and assist motors
                 m_indexerSubsystem.indexerOff(); // turn off the Indexer
                 m_shooterSubsystem.assistOn(); // turn on the assist
-                m_shooterSubsystem.shooterOn(); // if we wanted to use percentage to control the shooter speed
-                // m_shooterSubsystem.speedControlShooter(ShooterConstants.kUpperShooterMotorSpeed, ShooterConstants.kLowerShooterMotorSpeed); // this is a speed controlled shooter stage
+                // m_shooterSubsystem.shooterOn(); // if we wanted to use percentage to control the shooter speed
+                m_shooterSubsystem.speedControlShooter(ShooterConstants.kUpperShooterSpeed, ShooterConstants.kLowerShooterSpeed); // this is a speed controlled shooter stage
                 m_shooterStage = ShooterStage.RAMP_SHOOTER;
                 SmartDashboard.putString("Shooter State","RAMPING");
                 m_sysTime = System.currentTimeMillis(); // set a time stamp to wait at least xxx ms stable
